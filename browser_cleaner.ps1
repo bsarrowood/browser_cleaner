@@ -1,7 +1,8 @@
 # Created by:           Brad Arrowood
 # Created on:		    2023.03.16
-# Last updated:         2023.03.17
+# Last updated:         2023.03.22
 # Script name:		    browser_cleaner.ps1
+# Version:              1.3
 # Description:		    This is meant to clear all cache from Edge, Chrome, and Firefox
 #
 # References:
@@ -84,13 +85,17 @@ function clear_cache {
 
     # gets the username of the person currently logged in, not who is running the script
     # it then removes the domain from the result to be used to navigate to the localappdata
-    $current_user = $(Get-WMIObject -class Win32_ComputerSystem | Select-Object username).username
-    $current_user = $current_user.replace('HQY\','')
+    #$current_user = $(Get-WMIObject -class Win32_ComputerSystem | Select-Object username).username
+    #$current_user = $current_user.replace('HQY\','')
+    
+    # sets to localappdata path to a variable instead of trying to pull the user currently logged in to fill the file path
+    # while the get current_user works locally, when run through Tanium it has issues. doing it this way works both ways
+    $localappdata = $env:LOCALAPPDATA
 
     # setting the cache directories as variables
-    $edge_cache = 'C:\Users\'+$current_user+'\AppData\Local\Microsoft\Edge\User Data\Default\Cache'
-    $chrome_cache = 'C:\Users\'+$current_user+'\AppData\Local\Google\Chrome\User Data\Default'
-    $firefox_cache = 'C:\Users\'+$current_user+'\AppData\Local\Mozilla\Firefox\Profiles'
+    $edge_cache = $localappdata + '\Microsoft\Edge\User Data\Default'
+    $chrome_cache = $localappdata + '\Google\Chrome\User Data\Default'
+    $firefox_cache = $localappdata + '\Mozilla\Firefox\Profiles'
     
     if (Test-Path $edge_cache) {
 
@@ -99,8 +104,8 @@ function clear_cache {
             'IndexedDB', 'Local Storage', 'Service Worker', 'Storage' | Remove-Item -Recurse -Confirm:$false -Force
         
         # delete both files
-        $edge_cookies_1 = 'C:\Users\'+$current_user+'\AppData\Local\Microsoft\Edge\User Data\Default\Network\Cookies'
-        $edge_cookies_2 = 'C:\Users\'+$current_user+'\AppData\Local\Microsoft\Edge\User Data\Default\Network\Cookies-journal'
+        $edge_cookies_1 = $localappdata + '\Microsoft\Edge\User Data\Default\Network\Cookies'
+        $edge_cookies_2 = $localappdata + '\Microsoft\Edge\User Data\Default\Network\Cookies-journal'
         
         Remove-Item $edge_cookies_1 -Force
         Remove-Item $edge_cookies_2 -Force
@@ -114,8 +119,8 @@ function clear_cache {
             'IndexedDB', 'Local Storage', 'Service Worker', 'Storage' | Remove-Item -Recurse -Confirm:$false -Force
 
         # delete both files
-        $chrome_cookies_1 = 'C:\Users\'+$current_user+'\AppData\Local\Google\Chrome\User Data\Default\Network\Cookies'
-        $chrome_cookies_2 = 'C:\Users\'+$current_user+'\AppData\Local\Google\Chrome\User Data\Default\Network\Cookies-journal'
+        $chrome_cookies_1 = $localappdata + '\Google\Chrome\User Data\Default\Network\Cookies'
+        $chrome_cookies_2 = $localappdata + '\Google\Chrome\User Data\Default\Network\Cookies-journal'
         
         Remove-Item $chrome_cookies_1 -Force
         Remove-Item $chrome_cookies_2 -Force
@@ -196,3 +201,6 @@ function main {
 }
 
 main
+#kill_browser
+#Start-Sleep -Seconds 5
+#clear_cache
